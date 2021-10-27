@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs').promises;
+const getAllTalkers = require('./services/getAllTalkers');
+// const fs = require('fs').promises;
 
 const app = express();
 app.use(bodyParser.json());
@@ -8,7 +9,7 @@ app.use(bodyParser.json());
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
 
-const talkers = './talker.json';
+// const talkers = './talker.json';
 
 // -----------------------------------------------------------------------------------------
 // não remova esse endpoint, e para o avaliador funcionar
@@ -18,24 +19,27 @@ app.get('/', (_request, response) => {
 
 // -----------------------------------------------------------------------------------------
 
-async function getTalkers() {
-  try {
-    const result = await fs.readFile(talkers, 'utf-8');
-    const data = JSON.parse(result);
-    return data;
-  } catch (err) {
-    console.log(`Erro ao ler o arquivo: ${err.path}`);
-  }
-}
-
 app.get('/talker', async (_req, res) => {
-  const data = await getTalkers();
+  const talkers = await getAllTalkers();
   
-  if (data) {
-    return res.status(200).json(data);
+  if (talkers) {
+    return res.status(200).json(talkers);
   }
 
   return res.status(200).json([]);
+});
+
+app.get('/talker/:id', async (req, res) => {
+  const { id } = req.params;
+  const talkers = await getAllTalkers();
+
+  const [talkerInfos] = talkers.filter((talker) => +talker.id === +id); 
+
+  if (talkerInfos) {
+    return res.status(200).json(talkerInfos);
+  }
+  
+  return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
 });
 
 // -----------------------------------------------------------------------------------------
