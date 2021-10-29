@@ -1,6 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const getAllTalkers = require('./services/getAllTalkers');
+const getToken = require('./services/getToken');
+const authEmail = require('./middlewares/authEmail');
+const authPassword = require('./middlewares/authPassword');
 // const fs = require('fs').promises;
 
 const app = express();
@@ -41,6 +44,18 @@ app.get('/talker/:id', async (req, res) => {
   
   return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
 });
+
+app.post('/login', authEmail, authPassword, async (_req, res) => {  
+  const token = getToken();
+
+  return res.status(200).json({ token });
+});
+
+// app.get('/teste', async (_req, res) => {
+//   const token = getToken();
+
+//   return res.status(200).json(token);
+// });
 
 // -----------------------------------------------------------------------------------------
 
