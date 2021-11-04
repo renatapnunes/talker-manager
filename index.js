@@ -7,6 +7,7 @@ const authToken = require('./middlewares/authToken');
 const { authName, authAge, authTalk, authTalkKeys } = require('./middlewares/authTalkerData');
 const createTalker = require('./services/createTalker');
 const editTalker = require('./services/editTalker');
+const deleteTalker = require('./services/deleteTalker');
 // const fs = require('fs').promises;
 
 const app = express();
@@ -72,6 +73,15 @@ app.put('/talker/:id', authToken, authName, authAge, authTalk, authTalkKeys, asy
   await editTalker(talkersEdited);
   
   return res.status(200).json(talker);
+});
+
+app.delete('/talker/:id', authToken, async (req, res) => {
+  const talkers = await getAllTalkers();
+  const { id: idEdit } = req.params;
+  const talkersFiltered = talkers.filter((talker) => +talker.id !== +idEdit);
+  await deleteTalker(talkersFiltered);
+
+  return res.status(200).json({ message: 'Pessoa palestrante deletada com sucesso' });
 });
 
 // app.get('/teste', async (_req, res) => {
