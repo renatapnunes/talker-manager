@@ -2,8 +2,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const getAllTalkers = require('./services/getAllTalkers');
 const getToken = require('./services/getToken');
-const authEmail = require('./middlewares/authEmail');
-const authPassword = require('./middlewares/authPassword');
+const { authEmail, authPassword } = require('./middlewares/authLogin');
+const authToken = require('./middlewares/authToken');
+const { authName, authAge, authTalk, authTalkKeys } = require('./middlewares/authTalkerData');
+const createTalker = require('./services/createTalker');
+const editTalker = require('./services/editTalker');
 // const fs = require('fs').promises;
 
 const app = express();
@@ -49,6 +52,26 @@ app.post('/login', authEmail, authPassword, async (_req, res) => {
   const token = getToken();
 
   return res.status(200).json({ token });
+});
+
+app.post('/talker', authToken, authName, authAge, authTalk, authTalkKeys, async (req, res) => {
+  const talkers = await getAllTalkers();
+  const newTalker = { ...req.body, id: (talkers.length + 1) };
+  const talker = [...talkers, newTalker];
+  await createTalker(talker);
+  
+  return res.status(201).json(newTalker);
+});
+
+app.put('/talker/:id', authToken, authName, authAge, authTalk, authTalkKeys, async (req, res) => {
+  const talkers = await getAllTalkers();
+  const { id: idEdit } = req.params;
+  const talkersFiltered = talkers.filter((talker) => +talker.id !== +idEdit);
+  const talker = { ...req.body, id: +idEdit };
+  const talkersEdited = [...talkersFiltered, talker];
+  await editTalker(talkersEdited);
+  
+  return res.status(200).json(talker);
 });
 
 // app.get('/teste', async (_req, res) => {
